@@ -2,116 +2,107 @@
     space: .asciiz " "
     newline: .asciiz "\n"
     .align 2
-    fibonacci_array: .space 128       # Array to store Fibonacci numbers
+    fibonacci_array: .space 128
     prompt: .asciiz "Enter Number of Fibonacci Numbers: "
 
 .text
 .globl main
 main:
-    la $a0, prompt                   # Load the prompt string
+    la $a0, prompt
     li $v0, 4
-    syscall                          # Print prompt
-
-    li $v0, 5                        # Read integer input
     syscall
-    move $t0, $v0                    # $t0 = number of Fibonacci numbers to generate (n)
-    move $t1, $zero                  # Loop counter i
+
+    li $v0, 5
+    syscall
+    move $t0, $v0
+    move $t1, $zero
 
 begin_loop:
-    bge $t1, $t0, end_loop           # If i >= n, exit loop
+    bge $t1, $t0, end_loop
 
-    move $a0, $t1                    # Pass i as argument to fib function
-    jal fib                          # Call fib(i)
-    move $t2, $v0                    # $t2 = fib(i)
+    move $a0, $t1
+    jal fib
+    move $t2, $v0
 
-    # Store the result in fibonacci_array[i]
-    sll $t3, $t1, 2                  # $t3 = i * 4 (offset for array)
-    la $t4, fibonacci_array          # Base address of fibonacci_array
-    add $t4, $t4, $t3                # $t4 = &fibonacci_array[i]
-    sw $t2, 0($t4)                   # Store fib(i) at fibonacci_array[i]
+    sll $t3, $t1, 2
+    la $t4, fibonacci_array
+    add $t4, $t4, $t3
+    sw $t2, 0($t4)
 
-    # Print the first (i+1) elements of the array
-    la $a0, fibonacci_array          # Base address of fibonacci_array
-    addi $a1, $t1, 1                 # Number of elements to print = i + 1
-    jal print_array                  # Call print_array
+    la $a0, fibonacci_array
+    addi $a1, $t1, 1
+    jal print_array
 
-    addi $t1, $t1, 1                 # i++
-    j begin_loop                     # Repeat loop
+    addi $t1, $t1, 1
+    j begin_loop
 
 end_loop:
-    li $v0, 10                       # Exit program
+    li $v0, 10
     syscall
 
-# Fibonacci Function
 fib:
-    # Base Cases: fib(0) = 0, fib(1) = 1
     li $v0, 0
-    beq $a0, $zero, fib_return       # If n == 0, return 0
+    beq $a0, $zero, fib_return
 
     li $v0, 1
     li $t0, 1
-    beq $a0, $t0, fib_return         # If n == 1, return 1
+    beq $a0, $t0, fib_return
 
-    # Recursive Case: Calculate fib(n-1) + fib(n-2)
-    addi $sp, $sp, -16               # Allocate stack space
-    sw $ra, 0($sp)                   # Save return address
-    sw $a0, 4($sp)                   # Save n
-    sw $t1, 8($sp)                   # Save $t1
-    sw $t2, 12($sp)                  # Save $t2
+    addi $sp, $sp, -16
+    sw $ra, 0($sp)
+    sw $a0, 4($sp)
+    sw $t1, 8($sp)
+    sw $t2, 12($sp)
 
-    addi $a0, $a0, -1                # n - 1
-    jal fib                          # fib(n-1)
-    move $t1, $v0                    # $t1 = fib(n-1)
+    addi $a0, $a0, -1
+    jal fib
+    move $t1, $v0
 
-    lw $a0, 4($sp)                   # Restore n
-    addi $a0, $a0, -2                # n - 2
-    jal fib                          # fib(n-2)
-    move $t2, $v0                    # $t2 = fib(n-2)
+    lw $a0, 4($sp)
+    addi $a0, $a0, -2
+    jal fib
+    move $t2, $v0
 
-    add $v0, $t1, $t2                # fib(n) = fib(n-1) + fib(n-2)
+    add $v0, $t1, $t2
 
-    # Restore registers and stack
-    lw $ra, 0($sp)                   # Restore return address
-    lw $a0, 4($sp)                   # Restore n
-    lw $t1, 8($sp)                   # Restore $t1
-    lw $t2, 12($sp)                  # Restore $t2
-    addi $sp, $sp, 16                # Deallocate stack space
+    lw $ra, 0($sp)
+    lw $a0, 4($sp)
+    lw $t1, 8($sp)
+    lw $t2, 12($sp)
+    addi $sp, $sp, 16
 
 fib_return:
-    jr $ra                           # Return to caller
+    jr $ra
 
-# Print Array Function
 print_array:
-    addi $sp, $sp, -8                # Allocate stack space
-    sw $t0, 0($sp)                   # Save $t0
-    sw $t1, 4($sp)                   # Save $t1
+    addi $sp, $sp, -8
+    sw $t0, 0($sp)
+    sw $t1, 4($sp)
 
-    move $t0, $zero                  # $t0 = loop counter
+    move $t0, $zero
 
 print_loop:
-    bge $t0, $a1, end_print          # If loop counter >= size, exit loop
+    bge $t0, $a1, end_print
 
-    sll $t1, $t0, 2                  # $t1 = t0 * 4 (offset)
-    add $t1, $t1, $a0                # Address = base + offset
-    lw $a0, 0($t1)                   # Load element
+    sll $t1, $t0, 2
+    add $t1, $t1, $a0
+    lw $a0, 0($t1)
     li $v0, 1
-    syscall                          # Print integer
+    syscall
 
-    # Print space
-    la $a0, space                    # Load space character
-    li $v0, 4
-    syscall                          # Print space
-
-    addi $t0, $t0, 1                 # t0++
-    j print_loop                     # Repeat loop
-
-end_print:
-    la $a0, newline                  # Print newline at end
+    la $a0, space
     li $v0, 4
     syscall
 
-    # Restore registers and stack
+    addi $t0, $t0, 1
+    j print_loop
+
+end_print:
+    la $a0, newline
+    li $v0, 4
+    syscall
+
     lw $t0, 0($sp)
     lw $t1, 4($sp)
-    addi $sp, $sp, 8                 # Deallocate stack space
-    jr $ra                           # Return to caller
+    addi $sp, $sp, 8
+    jr $ra
