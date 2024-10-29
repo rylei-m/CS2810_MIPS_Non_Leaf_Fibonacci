@@ -16,7 +16,7 @@ print_array:
 print_loop:
     bge $t0, $a1, end_print
 
-    all $t1, $t0, 2
+    sll $t1, $t0, 2
     add $t1, $t1, $a0
     lw $a0, 0($t1)
     li $v0, 1
