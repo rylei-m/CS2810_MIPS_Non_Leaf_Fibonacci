@@ -3,8 +3,8 @@
     space: .asciiz " "
     newline: .asciiz "\n"
 
-    array_1: .word 1, 1, 2, 3, 5
-    array_2: .word 8, 13, 21
+    # array_1: .word 1, 1, 2, 3, 5
+    # array_2: .word 8, 13, 21
 
 # ASSN PT 2
     .align 2
@@ -39,10 +39,15 @@ main:
 begin_loop:
     bge $t1, $t0, end_loop
 
-    sll $t2, $t1, 2
-    la $t3, fibonacci_array
-    add $t3, $t3, $t2
-    sw $t1, 0($t3)
+# 3
+    move $a0, $t1
+    jal fib
+    move $t2, $v0
+
+    sll $t3, $t1, 2
+    la $t4, fibonacci_array
+    add $t4, $t4, $t3
+    sw $t2, 0($t4)
 
     la $a0, fibonacci_array
     addi $a1, $t1, 1
@@ -54,6 +59,19 @@ begin_loop:
 end_loop:
     li $v0, 10
     syscall
+
+fib:
+    li $v0, 0
+    beq $a0, $zero, fib_return
+
+    li $v0, 1
+    li $v0, 1
+    beq $a0, $t0, fib_return
+
+    li $v0, 2
+
+fib_return:
+    jr $ra
 
 # ASSN PT 1
 print_array:
@@ -87,4 +105,6 @@ end_print:
     lw $t0, 0($sp)
     lw $t1, 4($sp)
     addi $sp, $sp, 8
+
     jr $ra
+
