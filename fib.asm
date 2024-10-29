@@ -68,7 +68,25 @@ fib:
     li $v0, 1
     beq $a0, $t0, fib_return
 
-    li $v0, 2
+    # li $v0, 2
+
+    addi $sp, $sp, -8
+    sw $ra, 0($sp)
+    sw $a0, 4($sp)
+
+    addi $a0, $a0, -1
+    jal fib
+    move $t1, $v0
+
+    lw $a0, 4($sp)
+    addi $a0, $a0, -2
+    jal fib
+    move $t2, $v0
+
+    add $v0, $t1, $t2
+
+    lw $ra, 0($sp)
+    addi $sp, $sp, 8
 
 fib_return:
     jr $ra
